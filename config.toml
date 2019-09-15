@@ -1,4 +1,4 @@
-baseURL = "example.com"
+baseURL = "https://evancanfield.netlify.com/"
 title = "Fun Data Projects"
 theme = "manis-hugo-theme"
 
