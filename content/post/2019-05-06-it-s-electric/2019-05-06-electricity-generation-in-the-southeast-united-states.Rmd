@@ -1,0 +1,25 @@
+---
+title: It's Electric!
+author: Evan Canfield
+date: '2019-05-06'
+slug: electricity-generation-in-the-southeast-united-states
+categories: []
+tags:
+  - Shiny
+  - R
+  - Energy
+description: Using Shiny to map and visualize electricity generation in the Southeast United States
+draft: no
+---
+
+For the final project of the Spring 2019 DSBA 5122: Visual Analytics at University of North Carolina Charlotte class we were tasked with creating an interactive Shiny app based a topic of our choosing. Earlier in the semester I was introduced to the Washington Post article [Mapping how the United States generates its electricity](https://www.washingtonpost.com/graphics/national/power-plants). I was captivated by the visuals in the article of energy generation in the Untied states and the story they told. But the images, while evocative, were static. How would these images have looked if the article was written ten years earlier? Would it look about the same? Radically different? I wasn't sure! 
+
+Inspired by this question my team developed a Shiny was which visualizes electricity generation from 2001 through 2017. We focused on the Southeast United States as opposed to the entire country for two reasons. First, we decided to use Leaflet for our mapping visual. This allowed for the user to zoom in and around the map. But mapping every power plant as a point in Leaflet was a big burden. To limit the number of data points we limited the number of states. Second, I live in the Southeast and was very curious what was going on in my backyard.
+
+The application uses data provide the United States Energy Information Administration (EIA). Generator output and energy source data was provided by the yearly EIA-923 reports. Power plant name and location data was provided by the December 2018 EIA-860M report.
+
+The Shiny app is embedded below. The app layout was designed to optimally be viewed on a widescreen monitor, so when interacting with the app I would recommend going to the following link: 
+
+https://evan-canfield.shinyapps.io/Southeast_US_Electricity/
+
+<iframe width="100%" height="900" scrolling="yes" frameborder="no"  src="https://evan-canfield.shinyapps.io/Southeast_US_Electricity/"> </iframe>
