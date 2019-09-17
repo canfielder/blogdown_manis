@@ -1,5 +1,5 @@
 ---
-title: Amusement Park injuries - '#TidyTuesday'
+title: 'Amusement Park Injuries - #TidyTuesday'
 author: Evan Canfield
 date: '2019-09-10'
 slug: Amusement Park injuries
