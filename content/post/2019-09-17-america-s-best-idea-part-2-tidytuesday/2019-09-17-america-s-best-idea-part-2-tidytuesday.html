@@ -1,7 +1,7 @@
 ---
 title: 'America''s Best Idea - Part 2 #TidyTuesday'
 author: Evan Canfield
-date: '2019-09-17'
+date: '2019-09-18'
 slug: tidy-tuesday-38
 categories:
   - '#TidyTuesday'
@@ -9,15 +9,17 @@ tags:
   - animation
   - Energy
   - ggplot2
+  - update
 description: Racing Bar Chart of All National Park Sites
 ---
 
 
 
+<p><strong>Update:</strong>
+After getting some great feedback on twitter from the #rstats community I was able to make a few tweaks to improve the racing bar chart. I’d like to thank <span class="citation">@CedScherer</span> who pointed me to this great <a href="https://github.com/amrrs/animated_bar_charts_in_R">Github repo</a> and <span class="citation">@JonTheGeek</span> who directed me to last weeks <a href="https://www.tidytuesday.com/3">#TidyTuesday podcast</a></p>
 <div id="racing-bar-chart" class="section level1">
 <h1>Racing Bar Chart!!!</h1>
 <p>For #tidytuesday we’re looking at America’s National Parks! I have already blogged about how much I love the <a href="https://evancanfield.netlify.com/posts/2019-08-30-america-s-best-idea-national-parks/national-park-visuals/">Nation Park System</a>, so this is perfect. My goal is to create a racing bar chart to see which National Park sites have been the most popular since 1904.</p>
-<p><img src="data/nps_racing_bar.gif" /></p>
 <div id="libraries" class="section level2">
 <h2>Libraries</h2>
 <pre class="r"><code>if (!require(pacman)) {install.packages(&#39;pacman&#39;)} 
@@ -47,7 +49,7 @@ nps_park_region_list &lt;- read.csv(&quot;./data/nps_parks_top_25.csv&quot;,
 </div>
 <div id="data-prep" class="section level2">
 <h2>Data Prep</h2>
-<p>AThe only important data is the park name, the year, and the number of visitors. So the data set can be greatly pared down. The park name should be treated as a factor. Also, as a side note, I like a consistent case and labeling structure, so I use the janitor package to clean the variable names</p>
+<p>The only important data is the park name, the year, and the number of visitors. So the data set can be greatly pared down. The park name should be treated as a factor. Also, as a side note, I like a consistent case and labeling structure, so I use the janitor package to clean the variable names.</p>
 <pre class="r"><code>nps_summary &lt;- nps_summary_raw %&gt;% 
   clean_names() %&gt;% 
   select(park_name, year, recreation_visitors) %&gt;% 
@@ -66,7 +68,8 @@ nps_summary_rank &lt;- nps_summary %&gt;%
   ungroup() %&gt;% 
   filter(rank &lt;= number_of_parks) %&gt;% 
   left_join(nps_park_region_list, by = &quot;park_name&quot;) %&gt;% 
-  left_join(select(nps_region_colors, nps_region:nps_region_names), by = &quot;nps_region&quot; ) %&gt;% 
+  left_join(select(nps_region_colors, nps_region:nps_region_names),
+            by = &quot;nps_region&quot; ) %&gt;% 
   mutate(nps_region_names = as.factor(nps_region_names))</code></pre>
 <pre><code>## Warning: Column `park_name` joining factor and character vector, coercing
 ## into character vector</code></pre>
@@ -97,11 +100,15 @@ theme_racing_bar &lt;- function(){
       legend.text = element_text(size = 16),
       legend.title = element_text(size = 20),
       legend.spacing.y = unit(20, &quot;cm&quot;),
-      plot.margin = margin(2,2,2,2,&quot;cm&quot;),
+      plot.margin = margin(2,4,2,6,&quot;cm&quot;),
       plot.title = element_text(
         hjust = 0.5, 
         face = &quot;bold&quot;,
-        size = 40)
+        size = 40),
+      plot.subtitle = element_text(
+      hjust = 0.5, 
+      face = &quot;italic&quot;,
+      size = 30)
     )
 }</code></pre>
 <p>With that established the animation can be created.</p>
@@ -110,7 +117,7 @@ nps_racing_bar &lt;-
   ggplot(
     data = nps_summary_rank,
     mapping = aes(
-      x = -rank,
+      x = rank,
       y = recreation_visitors,
       group = park_name
          )
@@ -124,36 +131,27 @@ nps_racing_bar &lt;-
     )
   ) +
   geom_text(
-    aes(label = scales::comma(recreation_visitors)),
-    hjust = &quot;left&quot;,
-    size = 4,
+    aes(
+      y = recreation_visitors,
+      label = paste0(&quot;   &quot;,scales::comma(recreation_visitors))
+      ),
+    hjust = 0,
+    size = 6,
     fontface = &quot;bold&quot;,
-    nudge_y = 1e5, 
     colour = &quot;grey30&quot;
     )+
   geom_text(
-    aes(label = park_name),
+    aes(y = 0, label = paste0(park_name,&quot;   &quot;)),
     colour = &quot;black&quot;, 
     fontface = &quot;bold&quot;,
     size = 4,
-    hjust = &quot;right&quot;,
-    nudge_y = -1e5
+    hjust = 1
     )+
-  geom_text(
-    aes(
-      x = -13,
-      y = 14e6,
-      label = paste0(year)
-      ),
-    size = 20
-    ) +
   scale_y_continuous(
-    labels = scales::comma,
-    limits = c(-5.5e6,22e6)
+    labels = scales::comma
+    #limits = c(-5.5e6,22e6)
     ) +
-  scale_x_continuous(
-    limits = c(-16,0)
-    ) +
+  scale_x_reverse() +
   scale_fill_manual(
     values = color_map, 
     drop = FALSE
@@ -161,31 +159,62 @@ nps_racing_bar &lt;-
   guides(fill = guide_legend(nrow=3)) +
   coord_flip(clip = &quot;off&quot;) + 
   ylab(label = &quot;Visitors&quot;) +
-  labs(title = &quot;Most Visited National Park Sites&quot;,
-       caption = &quot;Data provided by US National Park Service&quot;,
+  labs(title = &quot;Top 15 Visited National Park Sites&quot;,
+       subtitle = &quot;Annual Visitors: {frame_time}&quot;,
+       caption = &quot;Recreational Visitors |Data Source: United States National Park Service&quot;,
        fill = &quot;NPS Region&quot;) +
-  theme_racing_bar() +
+  theme_racing_bar()  +
   transition_time(time = year) +
-  ease_aes(&#39;cubic-in-out&#39;)
+  ease_aes(&#39;sine-in-out&#39;) +
+  view_follow(fixed_x = TRUE) 
 
-# Animate Plot
-nps_racing_bar_gif &lt;- animate(
+# # Animation Plot
+# # Super Lower Res for testing
+# nps_racing_bar_gif_test &lt;- animate(
+#   plot = nps_racing_bar,
+#   nframes = 228,
+#   fps = 2,
+#   end_pause = 50,
+#   width = 1200,
+#   height = 900
+# )
+#
+#
+# # Lower Res for Twitter posts
+# nps_racing_bar_gif_lr &lt;- animate(
+#   plot = nps_racing_bar,
+#   nframes = 1140,
+#   fps = 10,
+#   end_pause = 50,
+#   width = 1200,
+#   height = 900
+# )
+# 
+# Higher Res
+nps_racing_bar_gif_hr &lt;- animate(
   plot = nps_racing_bar,
-  nframes = 2850,
+  nframes = 3000,
   fps = 50,
   end_pause = 50,
-  width = 960,
-  height = 600
-)
-
-#nps_racing_bar_gif
-
-#nps_racing_bar</code></pre>
+  width = 1200,
+  height = 900
+)</code></pre>
 </div>
+</div>
+<div id="run-animation" class="section level1">
+<h1>Run Animation</h1>
+<pre class="r"><code>#nps_racing_bar_gif_test
+#nps_racing_bar_gif_lr
+nps_racing_bar_gif_hr</code></pre>
+<p><img src="/post/2019-09-17-america-s-best-idea-part-2-tidytuesday/2019-09-17-america-s-best-idea-part-2-tidytuesday_files/figure-html/unnamed-chunk-3-1.gif" /><!-- --></p>
 </div>
 <div id="save-animation" class="section level1">
 <h1>Save Animation</h1>
-<pre class="r"><code># anim_save(filename = &quot;nps_racing_bar.gif&quot;, 
-#           animation = nps_racing_bar_gif, 
-#           path = &quot;./data/&quot;)</code></pre>
+<pre class="r"><code>anim_save(filename = &quot;nps_racing_bar_low_res.gif&quot;,
+          animation = nps_racing_bar_gif_lr,
+          path = &quot;./data/&quot;)
+
+anim_save(filename = &quot;nps_racing_bar_high_res.gif&quot;,
+          animation = nps_racing_bar_gif_hr,
+          path = &quot;./data/&quot;)</code></pre>
 </div>
